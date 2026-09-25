@@ -952,7 +952,7 @@ body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
 // ============================================================
 
 const DEFAULT_CONFIG = {
-  apiKey: 'sk-92929f39f2ad45229877a2323f06f099',
+  apiKey: '',
   apiUrl: 'https://api.deepseek.com/v1/chat/completions',
   model: 'deepseek-flash',
   synthesizerModel: 'deepseek-v4-pro',
@@ -961,12 +961,7 @@ const DEFAULT_CONFIG = {
 function loadConfig() {
   try {
     const saved = localStorage.getItem('narrative-terrain-config');
-    if (saved) {
-      const s = JSON.parse(saved);
-      const cfg = { ...DEFAULT_CONFIG, ...s };
-      if (!cfg.apiKey) cfg.apiKey = DEFAULT_CONFIG.apiKey;
-      return cfg;
-    }
+    if (saved) return { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
   } catch (_) {}
   return { ...DEFAULT_CONFIG };
 }
