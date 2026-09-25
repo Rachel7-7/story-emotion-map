@@ -149,6 +149,30 @@ body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #D6C6A9; border-radius: 3px; }
 
+/* ===== Tutorial / onboarding modal ===== */
+.tutorial-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.tutorial-overlay.hidden { display: none !important; }
+.tutorial-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(24,24,27,0.5);
+  backdrop-filter: blur(4px);
+  animation: tutorial-fade 0.25s ease;
+}
+.tutorial-card {
+  position: relative; z-index: 1;
+  background: #fff; border: 1px solid #E7DCC8;
+  border-radius: 20px; padding: 28px;
+  max-width: 420px; width: 100%; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  animation: tutorial-pop 0.3s ease;
+}
+@keyframes tutorial-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tutorial-pop { from { opacity: 0; transform: translateY(12px) scale(0.96); } to { opacity: 1; transform: none; } }
+
 /* ===== Sidebar Layout ===== */
 .app-layout {
   display: flex;
@@ -479,6 +503,9 @@ body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
     </div>
     <div class="sidebar-nav-item" data-view="settings" onclick="switchView('settings')">
       ⚙️ <span data-i18n="navSettings">设置</span>
+    </div>
+    <div class="sidebar-nav-item" onclick="showTutorial()">
+      ❓ <span data-i18n="navTutorial">使用教程</span>
     </div>
   </nav>
   <div class="px-3 py-2 text-xs font-semibold text-stone-400 uppercase tracking-wide">📁 <span data-i18n="sidebarProjectsLabel">我的项目</span></div>
@@ -943,6 +970,22 @@ body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
 <!-- Chart Tooltip -->
 <div id="chart-tooltip" class="chart-tooltip hidden"></div>
 
+<!-- Tutorial / onboarding modal (first visit) -->
+<div id="tutorial-overlay" class="tutorial-overlay hidden">
+  <div class="tutorial-backdrop" onclick="hideTutorial()"></div>
+  <div class="tutorial-card">
+    <div class="text-3xl mb-2">🏔️</div>
+    <h2 class="text-lg font-bold text-stone-800 mb-1" data-i18n="tutorialTitle">👋 欢迎使用故事情绪地图</h2>
+    <p class="text-sm text-stone-500 mb-4" data-i18n="tutorialSubtitle">跟着下面三步，30 秒上手</p>
+    <ol class="text-sm text-stone-600 space-y-2 text-left mb-5">
+      <li data-i18n="introStep1">① 点右上角「新建项目」，粘贴故事，或先点「加载示例」试试</li>
+      <li data-i18n="introStep2">② 点「AI 深度分析」，等待图表生成（约 10–20 分钟）</li>
+      <li data-i18n="introStep3">③ 看情绪曲线，点击图表上的点跳转到对应段落</li>
+    </ol>
+    <button onclick="hideTutorial()" class="w-full px-6 py-2.5 bg-amber-600 text-white text-sm font-medium rounded-xl hover:bg-amber-700 transition shadow-sm" data-i18n="tutorialBtnStart">开始使用</button>
+  </div>
+</div>
+
 <!-- ============================================================ -->
 <!-- JAVASCRIPT -->
 <!-- ============================================================ -->
@@ -993,6 +1036,10 @@ const I18N = {
     introStep1: '① 点右上角「新建项目」，粘贴故事，或先点「加载示例」试试',
     introStep2: '② 点「AI 深度分析」，等待图表生成（约 10–20 分钟）',
     introStep3: '③ 看情绪曲线，点击图表上的点跳转到对应段落',
+    tutorialTitle: '👋 欢迎使用故事情绪地图',
+    tutorialSubtitle: '跟着下面三步，30 秒上手',
+    tutorialBtnStart: '开始使用',
+    navTutorial: '使用教程',
     loadingEstimate: '⏱️ 为了更准确，AI 会多读几遍，通常需要 10–20 分钟，请耐心等待，没有卡住',
     tabManual: '✍️ 手动输入',
     tabFile: '📂 上传 MD 文件',
@@ -1405,6 +1452,10 @@ suggestion: 具体可操作的修改建议`,
     introStep1: '① Click "New Project" (top right), paste a story, or click "Load Sample" to try first',
     introStep2: '② Click "AI Deep Analysis" and wait for the chart (about 10-20 minutes)',
     introStep3: '③ Read the emotion curve, then click a point to jump to that paragraph',
+    tutorialTitle: '👋 Welcome to Story Emotion Map',
+    tutorialSubtitle: 'Get started in 3 steps',
+    tutorialBtnStart: 'Start',
+    navTutorial: 'Tutorial',
     loadingEstimate: '⏱️ For accuracy, the AI reads your story several times. This usually takes 10-20 minutes. Please wait, it is not stuck',
     tabManual: '✍️ Manual Input',
     tabFile: '📂 Upload MD File',
@@ -6143,6 +6194,31 @@ window.loadHistoryEntry = loadHistoryEntry;
 window.startNewAnalysis = startNewAnalysis;
 window.viewLatestAnalysis = viewLatestAnalysis;
 window.viewHistoryEntry = viewHistoryEntry;
+window.showTutorial = showTutorial;
+window.hideTutorial = hideTutorial;
+
+// ============================================================
+// 12b. TUTORIAL (first-visit onboarding)
+// ============================================================
+
+const TUTORIAL_SEEN_KEY = 'narrative-terrain-tutorial-seen';
+
+function showTutorial() {
+  const ov = document.getElementById('tutorial-overlay');
+  if (ov) ov.classList.remove('hidden');
+}
+
+function hideTutorial() {
+  const ov = document.getElementById('tutorial-overlay');
+  if (ov) ov.classList.add('hidden');
+  try { localStorage.setItem(TUTORIAL_SEEN_KEY, '1'); } catch(_) {}
+}
+
+function initTutorial() {
+  let seen = false;
+  try { seen = localStorage.getItem(TUTORIAL_SEEN_KEY) === '1'; } catch(_) {}
+  if (!seen) showTutorial();
+}
 
 // ============================================================
 // 13. INIT
@@ -6180,6 +6256,9 @@ document.getElementById('btn-toggle-lang').textContent = I18N.lang === 'zh' ? 'E
 // Start on projects view
 switchView('projects');
 renderSidebarProjects();
+
+// First-visit tutorial
+initTutorial();
 
 console.log(t('logReady'));
 console.log(t('logModelInfo'));
