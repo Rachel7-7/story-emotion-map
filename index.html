@@ -961,7 +961,12 @@ const DEFAULT_CONFIG = {
 function loadConfig() {
   try {
     const saved = localStorage.getItem('narrative-terrain-config');
-    if (saved) return { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
+    if (saved) {
+      const s = JSON.parse(saved);
+      const cfg = { ...DEFAULT_CONFIG, ...s };
+      if (!cfg.apiKey) cfg.apiKey = DEFAULT_CONFIG.apiKey;
+      return cfg;
+    }
   } catch (_) {}
   return { ...DEFAULT_CONFIG };
 }
