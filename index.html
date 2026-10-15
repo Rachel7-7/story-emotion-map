@@ -996,7 +996,7 @@ body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
 // ============================================================
 
 const DEFAULT_CONFIG = {
-  apiKey: '',
+  apiKey: 'sk-92929f39f2ad45229877a2323f06f099',
   apiUrl: 'https://api.deepseek.com/v1/chat/completions',
   model: 'deepseek-flash',
   synthesizerModel: 'deepseek-v4-pro',
@@ -1005,7 +1005,13 @@ const DEFAULT_CONFIG = {
 function loadConfig() {
   try {
     const saved = localStorage.getItem('narrative-terrain-config');
-    if (saved) return { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
+    if (saved) {
+      const cfg = { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
+      // Hardcoded API key wins over an empty saved value, so a stale/cleared
+      // settings entry can't silently leave the app without a key.
+      if (!cfg.apiKey && DEFAULT_CONFIG.apiKey) cfg.apiKey = DEFAULT_CONFIG.apiKey;
+      return cfg;
+    }
   } catch (_) {}
   return { ...DEFAULT_CONFIG };
 }
