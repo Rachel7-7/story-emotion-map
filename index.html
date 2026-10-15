@@ -996,10 +996,10 @@ body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
 // ============================================================
 
 const DEFAULT_CONFIG = {
-  apiKey: 'sk-92929f39f2ad45229877a2323f06f099',
+  apiKey: '',
   apiUrl: 'https://api.deepseek.com/v1/chat/completions',
   model: 'deepseek-flash',
-  synthesizerModel: 'deepseek-v4-pro',
+  synthesizerModel: 'deepseek-flash',
 };
 
 function loadConfig() {
@@ -1007,9 +1007,11 @@ function loadConfig() {
     const saved = localStorage.getItem('narrative-terrain-config');
     if (saved) {
       const cfg = { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
-      // Hardcoded API key wins over an empty saved value, so a stale/cleared
-      // settings entry can't silently leave the app without a key.
-      if (!cfg.apiKey && DEFAULT_CONFIG.apiKey) cfg.apiKey = DEFAULT_CONFIG.apiKey;
+      // deepseek-v4-pro hangs on the API; force the working flash model so a
+      // stale saved config can't silently keep the broken synthesizer model.
+      if (!cfg.synthesizerModel || cfg.synthesizerModel === 'deepseek-v4-pro') {
+        cfg.synthesizerModel = DEFAULT_CONFIG.synthesizerModel;
+      }
       return cfg;
     }
   } catch (_) {}
@@ -1170,6 +1172,7 @@ const I18N = {
 
 
     // API messages
+    apiKeyMissing: '请先在设置中填入你的 API Key（点击右上角 ⚙️）。密钥只保存在你自己的浏览器里，不会上传。',
     apiKeyInvalid: 'API Key 无效，请在设置中检查（点击右上角 ⚙️）',
     apiRateLimit: 'API 请求过于频繁，请稍等30秒后再试',
     apiForbidden: 'API 访问被拒绝，请检查 Key 权限或账户余额',
@@ -1186,7 +1189,7 @@ const I18N = {
 
     // Console
     logReady: '🏔️ 故事情绪地图 — 3+1 主编裁决模式已就绪',
-    logModelInfo: '  ⚡ 3轮独立分析 (deepseek-flash) + 🧠 主编综合裁决 (deepseek-v4-pro, thinking)',
+    logModelInfo: '  ⚡ 3轮独立分析 (deepseek-flash) + 🧠 主编综合裁决 (deepseek-flash, thinking)',
     logFeatures: '  📊 节拍级情绪曲线 + 关键节点标注  |  🖱️ 悬浮/点击查看详情',
     logShortcut: '  ⌨️ Ctrl+Enter 快速分析  |  ⚙️ 右上角设置 API Key',
     logDetails: '  🔍 原文引用匹配定位  |  曲线与节点统一设计  |  回退保护',
@@ -1586,6 +1589,7 @@ suggestion: 具体可操作的修改建议`,
     saveIndicator: '✓ Saved',
 
     // API messages
+    apiKeyMissing: 'Please enter your API key in Settings first (click ⚙️ top right). It is stored only in your own browser and never uploaded.',
     apiKeyInvalid: 'Invalid API Key. Check settings (click ⚙️ top right)',
     apiRateLimit: 'Too many requests. Please wait 30 seconds and retry.',
     apiForbidden: 'API access denied. Check key permissions or account balance.',
@@ -1602,7 +1606,7 @@ suggestion: 具体可操作的修改建议`,
 
     // Console
     logReady: '🏔️ Story Emotion Map — 3+1 Editor Model Ready',
-    logModelInfo: '  ⚡ 3 independent passes (deepseek-flash) + 🧠 Editor synthesizer (deepseek-v4-pro, thinking)',
+    logModelInfo: '  ⚡ 3 independent passes (deepseek-flash) + 🧠 Editor synthesizer (deepseek-flash, thinking)',
     logFeatures: '  📊 Beat-level emotion curve + key node markers  |  🖱️ Hover/click for details',
     logShortcut: '  ⌨️ Ctrl+Enter to analyze  |  ⚙️ Settings top-right',
     logDetails: '  🔍 Quote-based text matching  |  Unified curve & node design  |  Fallback protection',
@@ -2074,7 +2078,7 @@ async function callSynthesizerAPI(fullText, totalLines, passes, externalSignal, 
         'Authorization': `Bearer ${CONFIG.apiKey}`,
       },
       body: JSON.stringify({
-        model: CONFIG.synthesizerModel || 'deepseek-v4-pro',
+        model: CONFIG.synthesizerModel || 'deepseek-flash',
         messages: [
           { role: 'system', content: sysPrompt },
           { role: 'user', content: userPrompt },
@@ -2979,7 +2983,7 @@ function switchView(viewName, projId) {
     document.getElementById('settings-apikey').value = CONFIG.apiKey;
     document.getElementById('settings-endpoint').value = CONFIG.apiUrl;
     document.getElementById('settings-model').value = CONFIG.model;
-    document.getElementById('settings-synth-model').value = CONFIG.synthesizerModel || 'deepseek-v4-pro';
+    document.getElementById('settings-synth-model').value = CONFIG.synthesizerModel || 'deepseek-flash';
   }
   if (viewName === 'project') {
     if (projId) activeProjectId = projId;
@@ -4461,6 +4465,12 @@ async function runAIAnalysis() {
 
   if (lines.length === 0) {
     alert(I18N.lang === 'zh' ? '请先输入文本' : 'Please enter text first');
+    return;
+  }
+
+  if (!CONFIG.apiKey) {
+    alert(t('apiKeyMissing'));
+    switchView('settings');
     return;
   }
 
@@ -6228,7 +6238,7 @@ $on('btn-settings-save', 'click', () => {
   CONFIG.apiKey = document.getElementById('settings-apikey').value.trim();
   CONFIG.apiUrl = document.getElementById('settings-endpoint').value.trim();
   CONFIG.model = document.getElementById('settings-model').value.trim();
-  CONFIG.synthesizerModel = document.getElementById('settings-synth-model').value.trim() || 'deepseek-v4-pro';
+  CONFIG.synthesizerModel = document.getElementById('settings-synth-model').value.trim() || 'deepseek-flash';
   saveConfig(CONFIG);
   switchView(activeProjectId ? 'project' : 'projects');
 });
