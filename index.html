@@ -30,6 +30,7 @@ tailwind.config = {
 }
 </script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
 *, *::before, *::after { box-sizing: border-box;   font-family: 'Noto Serif SC', Georgia, serif;
@@ -565,7 +566,7 @@ body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
     </div>
     <div class="flex gap-2 mb-2 border-b border-stone-200" role="tablist">
       <button class="tab-btn active px-4 py-2.5 text-sm text-stone-600 bg-transparent cursor-pointer" data-tab="text" data-i18n="tabManual">✍️ 手动输入</button>
-      <button class="tab-btn px-4 py-2.5 text-sm text-stone-500 bg-transparent cursor-pointer" data-tab="file" data-i18n="tabFile">📂 上传 MD 文件</button>
+      <button class="tab-btn px-4 py-2.5 text-sm text-stone-500 bg-transparent cursor-pointer" data-tab="file" data-i18n="tabFile">📂 上传文件</button>
     </div>
     <div id="panel-text-new" class="space-y-3">
       <textarea id="new-project-text" class="w-full h-64 p-4 border border-stone-200 rounded-xl text-sm resize-y focus:border-amber-400 focus:ring-2 focus:ring-amber-100 outline-none font-mono" data-i18n-placeholder="textPlaceholder"></textarea>
@@ -575,7 +576,7 @@ body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
       </div>
     </div>
     <div id="panel-file-new" class="hidden space-y-3">
-      <div id="drop-zone-new" class="border-2 border-dashed border-stone-200 rounded-xl p-10 text-center cursor-pointer hover:border-amber-300 hover:bg-amber-50/30 transition" data-i18n="uploadHint">📂 点击或拖拽上传 .md 文件</div>
+      <div id="drop-zone-new" class="border-2 border-dashed border-stone-200 rounded-xl p-10 text-center cursor-pointer hover:border-amber-300 hover:bg-amber-50/30 transition" data-i18n="uploadHint">📂 点击或拖拽上传 .docx / .txt / .md 文件</div>
       <div id="compact-file-bar-new" class="compact-file-bar hidden"></div>
     </div>
     <div id="deep-selector-new" class="p-3 bg-violet-50/60 border border-violet-200 rounded-xl">
@@ -666,7 +667,7 @@ body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
   <section class="bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-stone-200/60 p-2 md:p-3">
     <div class="flex gap-1 mb-2 border-b border-stone-200" role="tablist">
       <button class="tab-btn active px-4 py-2.5 text-sm text-stone-600 bg-transparent cursor-pointer" data-tab="text" data-i18n="tabManual">✍️ 手动输入</button>
-      <button class="tab-btn px-4 py-2.5 text-sm text-stone-500 bg-transparent cursor-pointer" data-tab="file" data-i18n="tabFile">📂 上传 MD 文件</button>
+      <button class="tab-btn px-4 py-2.5 text-sm text-stone-500 bg-transparent cursor-pointer" data-tab="file" data-i18n="tabFile">📂 上传文件</button>
       <div class="ml-auto flex items-center gap-2 text-xs text-stone-400">
         <span id="line-count">0 <span data-i18n="linesLabel">行</span></span>
         <span class="text-stone-300">|</span>
@@ -686,9 +687,9 @@ body { font-family: 'Noto Sans SC', system-ui, sans-serif; }
       <div id="drop-zone"
         class="border-2 border-dashed border-stone-300 rounded-xl p-10 text-center cursor-pointer hover:border-amber-400 hover:bg-amber-50/50 transition">
         <div class="text-3xl mb-2">📄</div>
-        <p class="text-stone-500 text-sm" data-i18n="dropText">拖拽 .md / .txt 文件到此处，或点击选择</p>
-        <p class="text-stone-400 text-xs mt-1" data-i18n="dropHint">按行解析，自动剔除 Markdown 标记</p>
-        <input type="file" id="file-input" accept=".md,.txt,.text" class="hidden">
+        <p class="text-stone-500 text-sm" data-i18n="dropText">拖拽 .docx / .txt / .md 文件到此处，或点击选择</p>
+        <p class="text-stone-400 text-xs mt-1" data-i18n="dropHint">支持 Word / 文本，按行解析，自动剔除 Markdown 标记</p>
+        <input type="file" id="file-input" accept=".docx,.md,.txt,.text,.markdown" class="hidden">
       </div>
       <div id="file-info" class="hidden text-sm text-stone-500 bg-stone-50 rounded-lg p-3"></div>
     </div>
@@ -1042,12 +1043,13 @@ const I18N = {
     navTutorial: '使用教程',
     loadingEstimate: '⏱️ 为了更准确，AI 会多读几遍，通常需要 10–20 分钟，请耐心等待，没有卡住',
     tabManual: '✍️ 手动输入',
-    tabFile: '📂 上传 MD 文件',
+    tabFile: '📂 上传文件',
     linesLabel: '行',
     charsLabel: '字',
     placeholder: '在此粘贴你的故事文本\n\n每一行 = 一个叙事段落（空行自动忽略）\nAI 将自动识别体裁、分析情绪曲线、标注关键叙事节点...',
-    dropText: '拖拽 .md / .txt 文件到此处，或点击选择',
-    dropHint: '按行解析，自动剔除 Markdown 标记',
+    dropText: '拖拽 .docx / .txt / .md 文件到此处，或点击选择',
+    dropHint: '支持 Word / 文本，按行解析，自动剔除 Markdown 标记',
+    uploadHint: '📂 点击或拖拽上传 .docx / .txt / .md 文件',
     btnAnalyze: '🤖 AI 深度分析',
     loadingText: 'AI 正在深度分析你的故事...',
     loadingInit: '正在调用 DeepSeek API，请稍候',
@@ -1458,12 +1460,13 @@ suggestion: 具体可操作的修改建议`,
     navTutorial: 'Tutorial',
     loadingEstimate: '⏱️ For accuracy, the AI reads your story several times. This usually takes 10-20 minutes. Please wait, it is not stuck',
     tabManual: '✍️ Manual Input',
-    tabFile: '📂 Upload MD File',
+    tabFile: '📂 Upload File',
     linesLabel: 'lines',
     charsLabel: 'chars',
     placeholder: 'Paste your story text here\n\nEach line = one narrative paragraph (blank lines auto-ignored)\nAI will identify genre, analyze emotional curve, and mark key narrative nodes...',
-    dropText: 'Drag .md / .txt file here, or click to select',
-    dropHint: 'Parsed by line, Markdown markup auto-stripped',
+    dropText: 'Drag .docx / .txt / .md file here, or click to select',
+    dropHint: 'Supports Word / text; parsed by line, Markdown stripped',
+    uploadHint: '📂 Click or drag to upload .docx / .txt / .md file',
     btnAnalyze: '🤖 AI Deep Analysis',
     loadingText: 'AI is deeply analyzing your story...',
     loadingInit: 'Calling DeepSeek API, please wait',
@@ -1933,6 +1936,12 @@ function splitLines(text) {
   return text
     .split(/\r?\n/)
     .map(l => l.trim());
+}
+
+async function readDocxText(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer });
+  return result.value;
 }
 
 // Detect the story's language so the analysis result is written in that
@@ -4948,35 +4957,48 @@ $on('btn-change-file', 'click', () => {
 });
 
 function processUploadedFile(file) {
+  const ext = '.' + (file.name.split('.').pop() || '').toLowerCase();
+  if (ext === '.docx') {
+    readDocxText(file)
+      .then(text => finalizeUploadedFile(file, text))
+      .catch(() => alert(I18N.lang === 'zh'
+        ? '无法解析 Word 文件，请确认文件未损坏或稍后重试。'
+        : 'Could not parse the Word file. Please check the file and try again.'));
+    return;
+  }
   const reader = new FileReader();
   reader.onload = e => {
     let text = e.target.result;
-    if (file.name.endsWith('.md') || file.name.endsWith('.markdown')) {
+    if (ext === '.md' || ext === '.markdown') {
       text = cleanMarkdown(text);
     }
-    uploadedFileText = text;
-    const lines = splitLines(text);
-    const chars = lines.reduce((s, l) => s + l.replace(/\s/g, '').length, 0);
-    // Show compact file bar
-    document.getElementById('drop-zone').classList.add('hidden');
-    document.getElementById('compact-file-bar').classList.remove('hidden');
-    document.getElementById('compact-file-name').textContent = file.name + ' (' + lines.length + ' ' + t('linesLabel') + ' · ' + chars + ' ' + t('charsLabel') + ')';
-    // Sync to active project
-    const proj = getActiveProject();
-    if (proj) {
-      proj.storyText = text;
-      proj.lines = lines;
-      proj.analyses = {};
-      saveProjects();
-      state.lines = lines;
-      state.rawText = text;
-      state.analysisResult = null;
-    }
-    const ti = document.getElementById('text-input');
-    if (ti) ti.value = text;
-    updateInputStats();
+    finalizeUploadedFile(file, text);
   };
   reader.readAsText(file, 'UTF-8');
+}
+
+function finalizeUploadedFile(file, text) {
+  uploadedFileText = text;
+  const lines = splitLines(text);
+  const chars = lines.reduce((s, l) => s + l.replace(/\s/g, '').length, 0);
+  // Show compact file bar
+  document.getElementById('drop-zone').classList.add('hidden');
+  document.getElementById('compact-file-bar').classList.remove('hidden');
+  document.getElementById('compact-file-name').textContent = file.name + ' (' + lines.length + ' ' + t('linesLabel') + ' · ' + chars + ' ' + t('charsLabel') + ')';
+  // Sync to active project
+  const proj = getActiveProject();
+  if (proj) {
+    proj.storyText = text;
+    proj.lines = lines;
+    proj.analyses = {};
+    saveProjects();
+    state.lines = lines;
+    state.rawText = text;
+    state.analysisResult = null;
+  }
+  const ti = document.getElementById('text-input');
+  if (ti) ti.value = text;
+  updateInputStats();
 }
 
 // ---- New project form file upload ----
@@ -4986,7 +5008,7 @@ window._newProjectFileText = '';
   if (!dropZoneNew) return;
   const fileInputNew = document.createElement('input');
   fileInputNew.type = 'file';
-  fileInputNew.accept = '.md,.txt,.markdown';
+  fileInputNew.accept = '.docx,.md,.txt,.markdown';
   fileInputNew.style.display = 'none';
   dropZoneNew.parentElement.appendChild(fileInputNew);
 
@@ -5003,26 +5025,39 @@ window._newProjectFileText = '';
   });
 
   function processNewProjectFile(file) {
+    const ext = '.' + (file.name.split('.').pop() || '').toLowerCase();
+    if (ext === '.docx') {
+      readDocxText(file)
+        .then(text => finalizeNewProjectFile(file, text))
+        .catch(() => alert(I18N.lang === 'zh'
+          ? '无法解析 Word 文件，请确认文件未损坏或稍后重试。'
+          : 'Could not parse the Word file. Please check the file and try again.'));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = e => {
       let text = e.target.result;
-      if (file.name.endsWith('.md') || file.name.endsWith('.markdown')) {
+      if (ext === '.md' || ext === '.markdown') {
         text = cleanMarkdown(text);
       }
-      window._newProjectFileText = text;
-      const lines = splitLines(text);
-      const chars = lines.reduce((s, l) => s + l.replace(/\s/g, '').length, 0);
-      dropZoneNew.classList.add('hidden');
-      const bar = document.getElementById('compact-file-bar-new');
-      if (bar) {
-        bar.classList.remove('hidden');
-        bar.innerHTML = `<span class="truncate flex-1">📄 ${escHtml(file.name)}</span><span class="text-green-600 text-xs">✓ ${lines.length} ${t('linesLabel')} · ${chars} ${t('charsLabel')}</span><button class="text-xs text-amber-600 hover:text-amber-700 underline flex-shrink-0" onclick="document.getElementById('drop-zone-new').classList.remove('hidden');document.getElementById('compact-file-bar-new').classList.add('hidden');window._newProjectFileText='';">${I18N.lang === 'zh' ? '换文件' : 'Change'}</button>`;
-      }
-      // Also update char count
-      const cc = document.getElementById('new-project-char-count');
-      if (cc) cc.textContent = chars + ' 字';
+      finalizeNewProjectFile(file, text);
     };
     reader.readAsText(file, 'UTF-8');
+  }
+
+  function finalizeNewProjectFile(file, text) {
+    window._newProjectFileText = text;
+    const lines = splitLines(text);
+    const chars = lines.reduce((s, l) => s + l.replace(/\s/g, '').length, 0);
+    dropZoneNew.classList.add('hidden');
+    const bar = document.getElementById('compact-file-bar-new');
+    if (bar) {
+      bar.classList.remove('hidden');
+      bar.innerHTML = `<span class="truncate flex-1">📄 ${escHtml(file.name)}</span><span class="text-green-600 text-xs">✓ ${lines.length} ${t('linesLabel')} · ${chars} ${t('charsLabel')}</span><button class="text-xs text-amber-600 hover:text-amber-700 underline flex-shrink-0" onclick="document.getElementById('drop-zone-new').classList.remove('hidden');document.getElementById('compact-file-bar-new').classList.add('hidden');window._newProjectFileText='';">${I18N.lang === 'zh' ? '换文件' : 'Change'}</button>`;
+    }
+    // Also update char count
+    const cc = document.getElementById('new-project-char-count');
+    if (cc) cc.textContent = chars + ' 字';
   }
 
   // Char count for new project textarea
@@ -5121,49 +5156,91 @@ $on('btn-export-story', 'click', exportStory);
 // ---- Clear ----
 
 
-const SAMPLE_STORY_ZH = `星期一早上，Lena 看见教室门上贴着一张传单，写着"冬季才艺汇演——本周报名"。她弹吉他两年了，但都是一个人关在房间里弹，从没在别人面前弹过。
+const SAMPLE_STORY_ZH = `米娅曾经对自己保证，午餐时绝不去看身旁那个空着的座位，因为只要看上一眼，整件事就会变得更加真实。
 
-她正要走开，朋友 Sam 拉住了她的袖子。"你应该去，"Sam 说，"你真的很厉害，只是你自己不信。"
+可她假装对手机感兴趣了整整十分钟后，最后还是把手机放了下来，盯着那把椅子看。
 
-Lena 摇摇头，手伸进口袋，摸到一枚蓝色的小拨片。那是奶奶搬到很远的地方之前，留给她的最后一件东西。"我再想想。"她说。
+昨天，丹尼尔还坐在那里，一边抱怨食堂里的饭有多难吃，一边给她看一个他在网上找到的荒唐视频。他们笑个不停，直到上课铃响起。米娅离开时，丹尼尔还在她身后喊：
 
-到了周四，她的名字已经写在了名单上。
+"明天老地方见。"
 
-她选了一首奶奶以前常哼的老歌。一开始音符回来得很慢，像快要忘记的词。第一个星期结束，她能把整首歌不中断地弹下来了。一天晚上 Sam 过来，坐在地板上听。"听起来很暖。"Sam 说。
+而今天，他不在了。
 
-星期五，一个叫 Dana 的女孩在课上坐到了 Lena 旁边。"我听说你也要上台，"Dana 说，"我跳舞。"她们聊起紧张的感觉。Dana 说，改天可以一起练习，这样上台的时候谁都不会觉得孤单。Lena 说好。
+一开始，米娅只是觉得他迟到了。她朝走廊看了两次，等着他像往常一样出现——书包拉链只拉了一半，嘴里已经准备好了迟到的借口。
 
-然后几个星期就混在一起了。Lena 晚饭后练琴。她写作业。她把同样的三段又练了一遍。她上学，回家，晚饭后又练琴。副歌还是和昨天一样。她写完作业，睡前又练了一遍。第二天晚饭后练琴，再往后一天还是晚饭后练琴。什么都没变。歌没有变差，也没有变好。日子像彼此的复印件。
+可他始终没有出现，于是她给他发了条消息。
 
-Lena 没有再见到 Dana。她没多想，也没跟 Sam 提起。
+还活着吗？
 
-汇演那天晚上，Lena 走上台。灯光很亮，台下很安静。她的手在抖，但她从头到尾把整首歌弹完了，一个音都没错。然后她鞠了一躬，走下台。Sam 在第三排鼓掌鼓得最响。
+没有回复。
 
-演出结束后，Lena 和 Sam 在寒风中走回家。"我说过的吧。"Sam 说。Lena 笑了笑，但心里有点怪，好像整个晚上过得太快了。
+午饭结束后，她在楼梯附近看见了丹尼尔的朋友伊森，便问他丹尼尔是不是生病了。伊森耸了耸肩，说自己什么也没听说。
 
-她把手伸进口袋，摸到那枚蓝色拨片。演出已经结束了。也许下次，她会学一首新歌。`;
+整个下午，米娅在每节课之间都会拿出手机看一眼，虽然她自己也知道，根本没有什么理由期待会收到他的消息。
 
-const SAMPLE_STORY_EN = `Lena saw the flyer taped to the classroom door on Monday morning. "Winter Talent Show — sign up this week," it said. She had played guitar for two years, but only alone in her room with the door closed. She never played for anyone.
+第二天早上，丹尼尔的座位依旧空着。
 
-She was about to walk away when her friend Sam grabbed her sleeve. "You should do it," Sam said. "You're really good, even if you don't believe it."
+米娅又去问了伊森。她还问了另一个朋友，甚至去了学校办公室。秘书只告诉她，丹尼尔的家人希望学校能给他一些私人空间。
 
-Lena shook her head. Her hand went to her pocket, where a small blue guitar pick sat. It was the last thing her grandmother gave her before she moved to the other side of the country. "I'll think about it," she said.
+连续三天，同样的事情不断重复。
 
-By Thursday, her name was on the list.
+米娅不停地查看手机，问别人知不知道发生了什么，然后继续坐在那张空椅子的旁边。
 
-She chose an old song her grandmother used to hum. At first the notes came back slowly, like words she had almost forgotten. By the end of the first week, she could play the whole song without stopping. Sam came over one evening and sat on the floor, listening. "It sounds warm," Sam said.
+直到星期五下午，她终于收到了一条消息。
 
-On Friday, a girl named Dana sat down next to Lena in class. "I heard you're in the show too," Dana said. "I'm doing a dance." They talked about being nervous. Dana said they should practice in the same room sometime, so neither of them would feel alone up there. Lena said that sounded good.
+对不起。我不知道该怎么跟你说。我们家要搬走了。我明天就走。
 
-Then the weeks blurred together. Lena practiced after dinner. She did her homework. She practiced the same three parts again. She went to school. She came home. She practiced after dinner. The chorus still sounded the same as yesterday. She did her homework and practiced once more before bed. The next day she practiced after dinner, and the day after that she practiced after dinner too. Nothing changed. The song did not get worse, but it did not get better either. The days felt like copies of each other.
+米娅把那条消息看了两遍。
 
-Lena did not see Dana again. She did not think about it, and she did not mention it to Sam.
+然后，她笑了起来，尽管周围根本没有人能听见。
 
-On the night of the show, Lena walked onto the stage. The lights were bright, and the hall went quiet. Her hands were shaking, but she played the whole song from start to finish, and she did not make a mistake. Then she bowed and walked off. Sam clapped the loudest, from the third row.
+她打开他们平时聊食堂的聊天框，打下一句话：
 
-After the show, Lena and Sam walked home through the cold. "I told you so," Sam said. Lena smiled, but she felt a little strange, like the whole evening had gone by too fast.
+祝你好运，白痴。你还欠我一顿午饭。
 
-She put her hand in her pocket and felt the blue pick. The show was over now. Maybe next time she would learn a new song.`;
+丹尼尔几乎立刻回复了。
+
+我知道。总有一天会还你的。
+
+米娅最后看了一眼那个空着的座位，然后关掉手机，回家了。`;
+
+const SAMPLE_STORY_EN = `Mia had promised herself that she would not look at the empty seat beside her during lunch, because doing so would make the whole thing feel more real, but after ten minutes of pretending to be interested in her phone, she finally put it down and stared at the chair.
+
+Yesterday, Daniel had sat there, complaining about the cafeteria food and showing her a ridiculous video he had found online. They had laughed about it until the bell rang, and when Mia left, Daniel had called after her, "Same place tomorrow."
+
+Today, he was gone.
+
+At first, Mia assumed he was late. She checked the hallway twice, expecting him to appear with his backpack half-open and some excuse already prepared. When he did not come, she texted him.
+
+You alive?
+
+No answer.
+
+After lunch, she saw his friend Ethan near the stairs and asked if Daniel was sick. Ethan shrugged and said he had not heard anything. Mia spent the afternoon checking her phone between classes, although she knew there was no reason to expect a message.
+
+The next morning, Daniel's seat was empty again.
+
+Mia asked Ethan again. She asked another friend. She even stopped by the office, where the secretary told her that Daniel's family had requested that the school give him some privacy.
+
+For three days, the same thing happened. Mia kept checking her phone, asking people what they knew, and sitting beside the empty chair.
+
+On Friday afternoon, she finally received a message.
+
+Sorry. I didn't know how to tell you. My family is moving. I'm leaving tomorrow.
+
+Mia read it twice.
+
+Then she laughed, though there was nobody around to hear her.
+
+She opened the cafeteria chat and typed:
+
+Good luck, idiot. You still owe me lunch.
+
+Daniel replied almost immediately.
+
+I know. I'll pay you back someday.
+
+Mia looked at the empty seat one last time, then closed her phone and went home.`;
 
 
 // Deep toggle show/hide + custom dims container
